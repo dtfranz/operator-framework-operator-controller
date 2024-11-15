@@ -21,6 +21,12 @@ manifests: $(KUSTOMIZE) $(YQ)
 verify-manifests: manifests
 	git diff --exit-code
 
+E2E_REGISTRY_NAME=docker-registry
+E2E_REGISTRY_NAMESPACE=operator-controller-e2e
+export E2E_REGISTRY_IMAGE := image-registry.openshift-image-registry.svc:5000/e2e-test-registry:devel
+export LOCAL_REGISTRY_HOST := $(E2E_REGISTRY_NAME).$(E2E_REGISTRY_NAMESPACE).svc:5000
+export CLUSTER_REGISTRY_HOST := $(E2E_REGISTRY_NAME).$(E2E_REGISTRY_NAMESPACE).svc:5000
 .PHONY: test-e2e
-test-e2e: ## Run the e2e tests. TODO: stub until tests are working downstream
-	/bin/true 
+test-e2e: ## Run the e2e tests.
+	$(DIR)/build-test-registry.sh $(E2E_REGISTRY_NAMESPACE) $(E2E_REGISTRY_NAME) $(E2E_REGISTRY_IMAGE)
+	$(MAKE) e2e -C $(DIR)/../
